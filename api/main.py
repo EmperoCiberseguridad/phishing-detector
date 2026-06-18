@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from pydantic import BaseModel, HttpUrl
 import joblib
 import os
+import json
+import datetime
 
 from src.features import extract_features
 
@@ -14,7 +16,7 @@ if not os.path.exists(MODEL_PATH):
 
 model = joblib.load(MODEL_PATH)
 
-#IMPORTANTE: orden fijo de features (evita bugs silenciosos)
+# IMPORTANTE: orden fijo de features (evita bugs silenciosos)
 FEATURE_ORDER = [
     "url_length",
     "subdomain_count",
@@ -59,6 +61,16 @@ def scan(data: URLRequest):
 
     score = min(100, max(0, round(prob * 100, 2)))
 
+    event = {
+        "timestamp": datetime.datetime.utcnow().isoformat(),
+        "url": str(data.url),
+        "verdict": "PHISHING" if score > 50 else "LEGITIMATE",
+        "risk_score": score,
+        "confidence": round(prob, 3)
+    }
+
+    print(json.dumps(event))
+
     reasons = explain(feats)
 
     return {
@@ -66,7 +78,8 @@ def scan(data: URLRequest):
         "verdict": "PHISHING" if score > 50 else "LEGITIMATE",
         "risk_score": score,
         "confidence": round(prob, 3),
-        "reasons": reasons
+        "reasons": reasons,
+        "event": event
     }
 
 
