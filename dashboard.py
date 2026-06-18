@@ -7,7 +7,7 @@ st.set_page_config(page_title="SOC Dashboard - Phishing Detector", layout="wide"
 
 st.title("SOC Dashboard - Phishing Detection System")
 
-API_URL = "http://127.0.0.1:8000/scan"
+API_URL = "http://api:8000/scan"
 
 # historial en sesión
 if "history" not in st.session_state:
